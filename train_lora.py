@@ -29,7 +29,7 @@ BATCH_SIZE = 4
 GRADIENT_ACCUMULATION_STEPS = 4
 LEARNING_RATE = 2e-4
 NUM_EPOCHS = 3
-MAX_SEQ_LENGTH = 1024
+MAX_SEQ_LENGTH = 512
 
 class CSVLogCallback(TrainerCallback):
     """A simple callback to append training loss to a CSV file in real-time."""
