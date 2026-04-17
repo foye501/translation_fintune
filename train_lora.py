@@ -5,6 +5,7 @@ from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
     TrainingArguments,
+    TrainerCallback,
 )
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 from trl import SFTTrainer
@@ -29,6 +30,20 @@ GRADIENT_ACCUMULATION_STEPS = 4
 LEARNING_RATE = 2e-4
 NUM_EPOCHS = 3
 MAX_SEQ_LENGTH = 1024
+
+class CSVLogCallback(TrainerCallback):
+    """A simple callback to append training loss to a CSV file in real-time."""
+    def __init__(self, log_path="training_loss.csv"):
+        self.log_path = log_path
+        # Create CSV header if it doesn't exist
+        if not os.path.exists(self.log_path):
+            with open(self.log_path, "w", encoding="utf-8") as f:
+                f.write("step,epoch,training_loss,learning_rate\n")
+
+    def on_log(self, args, state, control, logs=None, **kwargs):
+        if logs is not None and "loss" in logs:
+            with open(self.log_path, "a", encoding="utf-8") as f:
+                f.write(f"{state.global_step},{logs.get('epoch', '')},{logs['loss']},{logs.get('learning_rate', '')}\n")
 
 def main():
     # 1. Determine Device Strategy (MPS for Mac, CUDA for Nvidia)
@@ -117,6 +132,7 @@ def main():
         tokenizer=tokenizer,
         args=training_args,
         formatting_func=formatting_prompts_func,
+        callbacks=[CSVLogCallback()]
     )
 
     # 8. Start Training
