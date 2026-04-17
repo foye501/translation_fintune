@@ -4,11 +4,10 @@ from datasets import load_dataset
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
-    TrainingArguments,
     TrainerCallback,
 )
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
-from trl import SFTTrainer
+from trl import SFTTrainer, SFTConfig
 
 # ==============================================================================
 # CONFIGURATION
@@ -108,8 +107,10 @@ def main():
 
     # 6. Training Arguments
     print("[*] Initializing Training Arguments...")
-    training_args = TrainingArguments(
+    # modern trl uses SFTConfig instead of TrainingArguments
+    training_args = SFTConfig(
         output_dir=OUTPUT_DIR,
+        max_seq_length=MAX_SEQ_LENGTH,
         per_device_train_batch_size=BATCH_SIZE,
         gradient_accumulation_steps=GRADIENT_ACCUMULATION_STEPS,
         learning_rate=LEARNING_RATE,
@@ -128,7 +129,6 @@ def main():
         model=model,
         train_dataset=dataset,
         peft_config=peft_config,
-        max_seq_length=MAX_SEQ_LENGTH,
         tokenizer=tokenizer,
         args=training_args,
         formatting_func=formatting_prompts_func,
