@@ -1,0 +1,7 @@
+.env
+*.csv
+*.jsonl
+venv/
+__pycache__/
+.DS_Store
+qwen_lora_output/
